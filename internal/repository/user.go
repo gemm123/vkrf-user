@@ -13,6 +13,7 @@ type userRepository struct {
 
 type UserRepository interface {
 	CreateUser(user model.User) error
+	GetUserByEmail(email string) (model.User, error)
 }
 
 func NewUserRepository(db *pgxpool.Pool) UserRepository {
@@ -28,4 +29,18 @@ func (r *userRepository) CreateUser(user model.User) error {
 	}
 
 	return nil
+}
+
+func (r *userRepository) GetUserByEmail(email string) (model.User, error) {
+	query := "SELECT id, name, email, profile_pic FROM users WHERE email = $1"
+	row := r.db.QueryRow(context.Background(), query, email)
+
+	var user model.User
+	err := row.Scan(&user.Id, &user.Name, &user.Email, &user.ProfilePic)
+	if err != nil {
+		log.Printf("REPO: Error getting user by email: %v\n", err)
+		return model.User{}, err
+	}
+
+	return user, nil
 }
