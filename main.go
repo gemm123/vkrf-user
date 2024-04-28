@@ -6,6 +6,7 @@ import (
 	grpcserver "github.com/gemm123/vkrf-user/internal/grpc"
 	"github.com/gemm123/vkrf-user/internal/repository"
 	"github.com/gemm123/vkrf-user/internal/service"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -36,11 +37,13 @@ func runGrpcServer(db *pgxpool.Pool) {
 }
 
 func runRestApiServer(db *pgxpool.Pool) {
+	validate := validator.New()
+
 	userRepository := repository.NewUserRepository(db)
 
 	userService := service.NewUserService(userRepository)
 
-	userController := controller.NewUserController(userService)
+	userController := controller.NewUserController(userService, validate)
 
 	app := fiber.New()
 
